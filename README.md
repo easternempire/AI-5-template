@@ -1,7 +1,7 @@
-AC215-Template (Milestone 5)
+AI5-Template (Milestone 5)
 ==============================
 
-AC215
+AI5
 
 Notes:
 
@@ -71,7 +71,7 @@ Project Organization
     
 --------
 
-# AC215 - Milestone5
+# AI5 - Milestone5
 
 **Team Members**
 Pavlov Protovief, Paolo Primopadre and Pablo El Padron
