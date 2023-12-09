@@ -1,12 +1,7 @@
-AI5 - \<Project Title>
+AC215-Template
 ==============================
-### Presentation  Video
-* \<Link Here>
 
-### Blog Post Link
-*  \<Link Here>
----
-
+AC215
 
 Notes:
 
@@ -17,9 +12,6 @@ Project Organization
 ------------
 
     .
-    ├── .github 
-    │   ├── workflows         
-    │   │   │   ├── cicdworkflow.yaml
     ├── data # DO NOT UPLOAD DATA
     │   ├── interim          <- Intermediate preprocessed data
     │   │   ├── test.csv
@@ -42,40 +34,41 @@ Project Organization
     │   ├── milestone2.md
     │   └── milestone3.md
     │   └── milestone4.md
-    │   └── milestone5.md
     ├── presentations        <- Folder containing your midterm presentation
     │   └── midterm.pdf
     ├── requirements.txt
-    ├── src                    <- Source code and Dockerfiles for data processing and modeling
-    │   ├── data-collector     <- Scripts for dataset creation
-    │   │   ├── ...
-    │   ├── data-processor     <- Code for data processing
-    │   │   ├── ...
-    │   └── model-training     <- Model training, evaluation, and prediction code
-    │   │   ├── ...
-    │   └── model-deploy       <- Model deployment
-    │   │   ├── ...
-    │   ├── workflow           <- Scripts for automating data collection, preprocessing, modeling
-    │   │   ├── ...
-    │   ├── api-service        <- Code for App backend APIs
-    │   │   ├── ...
-    │   ├── frontend            <- Code for App frontend
-    │   │   ├── ...
-    │   ├── deployment          <- Code for App deployment to GCP
-    │   │   ├── deploy-create-instance.yml
-    │   │   ├── deploy-docker-images.yml
-    │   │   ├── deploy-provision-instance.yml
-    │   │   ├── deploy-setup-containers.yml
-    │   │   ├── deploy-setup-webserver.yml
-    │   │   ├── deploy-k8s-cluster.yml
-    │   │   ├── inventory.yml
+    ├── src                  <- Source code and Dockerfiles for data processing and modeling
+    │   ├── datapipeline     <- Scripts for dataset creation
+    │   │   ├── build_records.py
+    │   │   ├── dataloader.py
+    │   │   ├── Dockerfile
+    │   │   ├── process.py
+    │   │   ├── Pipfile.lock
+    │   │   └── Pipfile
+    │   └── models           <- Model training, evaluation, and prediction code
+    │       └── vgg16
+    │           ├── Dockerfile
+    │           ├── Pipfile
+    │           ├── Pipfile.lock
+    │           └── train_multi_gpu.py
+    │       └── vgg16_pruning
+    │           ├── Dockerfile
+    │           ├── Pipfile
+    │           ├── Pipfile.lock
+    │           └── train_multi_gpu.py
+    │   ├── workflow     <- Scripts for automating data collection, preprocessing, modeling
+    │   │   ├── cli.py
+    │   │   ├── pipeline.yaml
     │   │   ├── Dockerfile
     │   │   ├── docker-entrypoint.sh
     │   │   ├── docker-shell.sh
-    
+    │   │   ├── Pipfile
+    │   │   └── Pipfile.lock
+    └── test_project.py
+
 --------
 
-# AI5 - Final Project
+# AC215 - Milestone4 - ButterFlyer
 
 **Team Members**
 Pavlov Protovief, Paolo Primopadre and Pablo El Padron
@@ -83,105 +76,96 @@ Pavlov Protovief, Paolo Primopadre and Pablo El Padron
 **Group Name**
 Awesome Group
 
-**Project - Problem Definition**
-In this project we aim to develop an application that can identify various species of mushrooms in the wild using computer vision and offer educational content through a chatbot interface.
+**Project**
+In this project we aim to develop an application that can identify various species of butterflies in the wild using computer vision and offer educational content through a chatbot interface.
 
-## Data Description 
+### Milestone4
 
-## Proposed Solution
-
-After completions of building a robust ML Pipeline in our previous milestone we have built a backend api service and frontend app. This will be our user-facing application that ties together the various components built in previous milestones.
-
-**Mushroom App**
-
-A user friendly React app was built to identify various species of mushrooms in the wild using computer vision models from the backend. Using the app a user can take a picture of a mushroom and upload it. The app will send the image to the backend api to get prediction results on weather the mushroom is poisonous or not. 
-
-Here are some screenshots of our app:
-<img src="images/frontend-1.png"  width="800">
-
-<img src="images/frontend-2.png"  width="800">
-
-**Kubernetes Deployment**
-
-We deployed our frontend and backend to a kubernetes cluster to take care of load balancing and failover. We used ansible scripts to manage creating and updating the k8s cluster. Ansible helps us manage infrastructure as code and this is very useful to keep track of our app infrastructure as code in GitHub. It helps use setup deployments in a very automated way.
-
-Here is our deployed app on a K8s cluster in GCP:
-<img src="images/k8s-cluster.png"  width="800">
+We incorporated workflow orchestration into our project with the use of [Vertex AI Pipelines](https://cloud.google.com/vertex-ai/docs/pipelines). In order to utilize this tool, we created a script that specifies the directed acyclic graph (DAG) for calling the data collection, data preprocessing, and modeling tasks, as well as how to run each of these tasks. Finally, the script ships our code off to Vertex AI Pipelines, which runs each of our tasks in the order we specified.
 
 
-### Code Structure
-
-The following are the folders from the previous milestones:
-```
-- data-collector
-- data-processor
-- model-training
-- model-deploy
-- api-service
-- frontend
-- deployment
-```
-
-**API Service Container**
-This container has all the python files to run and expose thr backend apis.
-
-To run the container locally:
-- Open a terminal and go to the location where `awesome-app/src/api-service`
-- Run `sh docker-shell.sh`
-- Once inside the docker container run `uvicorn_server`
-- To view and test APIs go to `http://localhost:9000/docs`
-
-**Frontend Container**
-This container contains all the files to develop and build a react app. There are dockerfiles for both development and production
-
-To run the container locally:
-- Open a terminal and go to the location where `awesome-app/src/frontend`
-- Run `sh docker-shell.sh`
-- If running the container for the first time, run `yarn install`
-- Once inside the docker container run `yarn start`
-- Go to `http://localhost:3000` to access the app locally
+Regarding the modeling process, we wanted to see if we could utilize a compression technique that allowed us to get similar accuracy to our VGG16 performance with considerably fewer weights. Our goal was to decrease training time in order to improve development turnaround time, as well as reduce latency when we eventually deploy our model in our web application. 
 
 
-**Deployment Container**
-This container helps manage building and deploying all our app containers. The deployment is to GCP and all docker images go to GCR. 
+**Vertex AI Pipelines**
 
-To run the container locally:
-- Open a terminal and go to the location where `awesome-app/src/deployment`
-- Run `sh docker-shell.sh`
-- Build and Push Docker Containers to GCR (Google Container Registry)
-```
-ansible-playbook deploy-docker-images.yml -i inventory.yml
-```
+Below you can see two images related to our work with Vertex AI Pipelines. The first showcases our models which we've saved within the Vertex AI *Model Registry*, and the second is our *Endpoints*, which are our models that are available for model prediction requests. 
 
-- Create & Deploy Cluster
-```
-ansible-playbook deploy-k8s-cluster.yml -i inventory.yml --extra-vars cluster_state=present
-```
+![model registry](images/model_registry.png)
 
-- View the App
-* Copy the `nginx_ingress_ip` from the terminal from the create cluster command
-* Go to `http://<YOUR INGRESS IP>.sslip.io`
+![model endpoints](images/endpoints.png)
 
-- Run ML Tasks in Vertex AI
-* Run `python cli.py --data_collector`, run just the data collector on Vertex AI
-* Run `python cli.py --data_processor`, run just the data processor on Vertex AI
-* Run `python cli.py --pipeline`, run the entire ML pipeline in Vertex AI
 
-### Deploy using GitHub Actions
+**Compression Model**
 
-Finally we added CI/CD using GitHub Actions, such that we can trigger deployment or any other pipeline using GitHub Events. Our yaml files can be found under `.github/workflows`
+Below you can see our Weights & Biases page while training our compression model
+![compression wandb](images/wandb.png)
 
-`cicdworkflow.yml` - Brief description here
+#### Code Structure
 
-We implemented a CI/CD workflow to use the deployment container to 
-* Invoke docker image building and pushing to GCR on code changes
-* Deploy the changed containers to update the k8s cluster
-* Run Vertex AI jobs if needed
+**Data Folder**
+`Don't submit data, but we wanted to show one possible way of structuring data transformations.`
 
----
+**Data Processing Container**
 
-## NOTE
+- This container reads 100GB of data, transforming the images to TFRecords and stores them on a GCP bucket
+- Input to this container is source and destination GCS location, parameters for resizing, secrets needed - via docker
+- Output from this container stored on GCP bucket
 
-**DO NOT KEEP YOUR GCP INSTANCES RUNNING**
+(1) `src/datapipeline/dataloader.py`  - This script loads the original immutable data to our compute instance's local `raw` folder for processing.
 
-Once you are done with taking screenshots for the milestone bring them down. 
+(2) `src/datapipeline/build_records.py`  - Loads a local copy of the dataset, processes it according to our new transformations, converts it to TFRecords, and pushes it to a GCP bucket sink.
+
+(3) `src/preprocessing/Dockerfile` - This dockerfile starts with  `python:3.8-slim-buster`. This <statement> attaches volume to the docker container and also uses secrets (not to be stored on GitHub) to connect to GCS.
+
+To run Dockerfile - `Instructions here`
+
+**VGG16 Training Container**
+
+- This container contains all our training scripts and modeling components. It will use data from a GCP bucket, train, and then output model artifacts (saved model) to a GCP bucket.
+- The input for this container is the source bucket for our training data and the output bucket for storing the trained model.
+- Output is a saved TF Keras model.
+
+(1) `src/models/vgg16/train_multi_gpu.py` - This script converts incoming data to TFRecords, applies standard image augmentation, and fits the model. It takes the following arguments:
+
+> > --gpu [int] : the number of GPUs to use for training, default is 1
+> > --input [string] : the source of the training data
+> > --output [string] : the bucket which to store model artifacts
+
+(3) `src/models/vgg16/Dockerfile` - This dockerfile starts with  `python:3.8-slim-buster`. This <statement> attaches volume to the docker container and also uses secrets (not to be stored on GitHub) to connect to GCS.
+
+
+**VGG16 Pruning Container**
+
+This container has a very similar structure to that of the *VGG16 Training Container* mentioned above, with the main difference being the incorporation of the pruning compression technique.
+
+Below, you will see the difference in model size, parameters, performance, and a detailed description of why we chose this pruning technique and what lessons we learned:
+`Image(s) and detailed explanation(s) here`
+
+
+**Workflow Orchestration Container**
+
+- This container will be used to build pipelines that run in Vertex AI. 
+- Pipelines can be orchestrated using Kubeflow Pipelines Python SDK ([kfp](https://www.kubeflow.org/docs/components/pipelines/v1/sdk/sdk-overview/)). 
+- This container will have a CLI to submit the pipeline to Vertex AI in GCP.
+
+(1) `src/workflow/cli.py`  - The CLI to test creation and execution of pipelines.
+
+(2) `src/workflow/pipeline.yaml`  - The generated pipeline definition file. 
+
+(3) `src/workflow/Dockerfile` - This Dockerfile holds all the instruction to re-create an environemnt with all Google Cloud SDKs to enable us to connect with Vertext AI in GCP.
+
+(4) `src/workflow/Pipfile` - Contains all the python dependencies required
+
+`Image(s) and summary explanation(s) here on how each component of the pipeline works`
+
+![pipeline](images/pipeline-02.png)
+
+![pipeline](images/pipeline-01.png)
+
+
+**Dockerfile Instructions**
+To run Dockerfile - `Instructions here`
+
+**Notebooks** 
+This folder contains code that is not part of container - for e.g: EDA, any 🔍 🕵️‍♀️ 🕵️‍♂️ crucial insights, reports or visualizations. 
