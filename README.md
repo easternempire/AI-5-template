@@ -1,81 +1,29 @@
-AI5 - \<Project Title>
+AC215-Template (Milestone2)
 ==============================
-### Presentation  Video
-* \<Link Here>
 
-### Blog Post Link
-*  \<Link Here>
----
-
-
-Notes:
-
-    The files are empty placeholders only
-    Never commit large data files,trained models, personal API Keys/secrets to GitHub
+AC215 - Milestone2
 
 Project Organization
 ------------
+      ├── LICENSE
+      ├── README.md
+      ├── notebooks
+      ├── references
+      ├── requirements.txt
+      ├── setup.py
+      └── src
+            ├── preprocessing
+            │   ├── Dockerfile
+            │   ├── preprocess.py
+            │   └── requirements.txt
+            └── validation
+                  ├── Dockerfile
+                  ├── cv_val.py
+                  └── requirements.txt
 
-    .
-    ├── .github 
-    │   ├── workflows         
-    │   │   │   ├── cicdworkflow.yaml
-    ├── data # DO NOT UPLOAD DATA
-    │   ├── interim          <- Intermediate preprocessed data
-    │   │   ├── test.csv
-    │   │   ├── train.csv
-    │   │   └── val.csv
-    │   ├── processed        <- Final dataset files for modeling
-    │   │   ├── file_00-0.tfrec
-    │   │   ├── file_00-1.tfrec
-    │   │   ├── file_00-2.tfrec
-    │   │   └── file_00-3.tfrec
-    │   └── raw              <- Original immutable input data
-    │       └── training_data.zip
-    ├── LICENSE
-    ├── notebooks            <- Jupyter notebooks for EDA and model testing
-    │   ├── eda.ipynb
-    │   └── model_testing.ipynb
-    ├── README.md
-    ├── references           <- Reference materials such as papers
-    ├── reports              <- Folder containing your milestone markdown submissions
-    │   ├── milestone2.md
-    │   └── milestone3.md
-    │   └── milestone4.md
-    │   └── milestone5.md
-    ├── presentations        <- Folder containing your midterm presentation
-    │   └── midterm.pdf
-    ├── requirements.txt
-    ├── src                    <- Source code and Dockerfiles for data processing and modeling
-    │   ├── data-collector     <- Scripts for dataset creation
-    │   │   ├── ...
-    │   ├── data-processor     <- Code for data processing
-    │   │   ├── ...
-    │   └── model-training     <- Model training, evaluation, and prediction code
-    │   │   ├── ...
-    │   └── model-deploy       <- Model deployment
-    │   │   ├── ...
-    │   ├── workflow           <- Scripts for automating data collection, preprocessing, modeling
-    │   │   ├── ...
-    │   ├── api-service        <- Code for App backend APIs
-    │   │   ├── ...
-    │   ├── frontend            <- Code for App frontend
-    │   │   ├── ...
-    │   ├── deployment          <- Code for App deployment to GCP
-    │   │   ├── deploy-create-instance.yml
-    │   │   ├── deploy-docker-images.yml
-    │   │   ├── deploy-provision-instance.yml
-    │   │   ├── deploy-setup-containers.yml
-    │   │   ├── deploy-setup-webserver.yml
-    │   │   ├── deploy-k8s-cluster.yml
-    │   │   ├── inventory.yml
-    │   │   ├── Dockerfile
-    │   │   ├── docker-entrypoint.sh
-    │   │   ├── docker-shell.sh
-    
+
 --------
-
-# AI5 - Final Project
+# AC215 - Milestone2 - ButterFlyer
 
 **Team Members**
 Pavlov Protovief, Paolo Primopadre and Pablo El Padron
@@ -83,105 +31,41 @@ Pavlov Protovief, Paolo Primopadre and Pablo El Padron
 **Group Name**
 Awesome Group
 
-**Project - Problem Definition**
-In this project we aim to develop an application that can identify various species of mushrooms in the wild using computer vision and offer educational content through a chatbot interface.
+**Project**
+In this project we aim to develop an application that can identify various species of butterflies in the wild using computer vision and offer educational content through a chatbot interface.
 
-## Data Description 
+### Milestone2 ###
 
-## Proposed Solution
+We gathered dataset of 1M butterflies representing 17K species. Our dataset comes from following sources - (1),(2),(3) with approx 100GB in size. We parked our dataset in a private Google Cloud Bucket. 
 
-After completions of building a robust ML Pipeline in our previous milestone we have built a backend api service and frontend app. This will be our user-facing application that ties together the various components built in previous milestones.
+**Preprocess container**
+- This container reads 100GB of data and resizes the image sizes and stores it back to GCP
+- Input to this container is source and destincation GCS location, parameters for resizing, secrets needed - via docker
+- Output from this container stored at GCS location
 
-**Mushroom App**
+(1) `src/preprocessing/preprocess.py`  - Here we do preprocessing on our dataset of 100GB, we reduce the image sizes (a parameter that can be changed later) to 128x128 for faster iteration with our process. Now we have dataset at 10GB and saved on GCS. 
 
-A user friendly React app was built to identify various species of mushrooms in the wild using computer vision models from the backend. Using the app a user can take a picture of a mushroom and upload it. The app will send the image to the backend api to get prediction results on weather the mushroom is poisonous or not. 
+(2) `src/preprocessing/requirements.txt` - We used following packages to help us preprocess here - `special butterfly package` 
 
-Here are some screenshots of our app:
-<img src="images/frontend-1.png"  width="800">
+(3) `src/preprocessing/Dockerfile` - This dockerfile starts with  `python:3.8-slim-buster`. This <statement> attaches volume to the docker container and also uses secrets (not to be stored on GitHub) to connect to GCS.
 
-<img src="images/frontend-2.png"  width="800">
+To run Dockerfile - `Instructions here`
 
-**Kubernetes Deployment**
+**Cross validation, Data Versioning**
+- This container reads preprocessed dataset and creates validation split and uses dvc for versioning.
+- Input to this container is source GCS location, parameters if any, secrets needed - via docker
+- Output is flat file with cross validation splits
+  
+(1) `src/validation/cv_val.py` - Since our dataset is quite large we decided to stratify based on species and kept 80% for training and 20% for validation. Our metrics will be monitored on this 20% validation set. 
 
-We deployed our frontend and backend to a kubernetes cluster to take care of load balancing and failover. We used ansible scripts to manage creating and updating the k8s cluster. Ansible helps us manage infrastructure as code and this is very useful to keep track of our app infrastructure as code in GitHub. It helps use setup deployments in a very automated way.
+(2) `requirements.txt` - We used following packages to help us with cross validation here - `iterative-stratification` 
 
-Here is our deployed app on a K8s cluster in GCP:
-<img src="images/k8s-cluster.png"  width="800">
+(3) `src/validation/Dockerfile` - This dockerfile starts with  `python:3.8-slim-buster`. This <statement> attaches volume to the docker container and also uses secrets (not to be stored on GitHub) to connect to GCS.
 
+To run Dockerfile - `Instructions here`
 
-### Code Structure
+**Notebooks** 
+This folder contains code that is not part of container - for e.g: EDA, any 🔍 🕵️‍♀️ 🕵️‍♂️ crucial insights, reports or visualizations. 
 
-The following are the folders from the previous milestones:
-```
-- data-collector
-- data-processor
-- model-training
-- model-deploy
-- api-service
-- frontend
-- deployment
-```
-
-**API Service Container**
-This container has all the python files to run and expose thr backend apis.
-
-To run the container locally:
-- Open a terminal and go to the location where `awesome-app/src/api-service`
-- Run `sh docker-shell.sh`
-- Once inside the docker container run `uvicorn_server`
-- To view and test APIs go to `http://localhost:9000/docs`
-
-**Frontend Container**
-This container contains all the files to develop and build a react app. There are dockerfiles for both development and production
-
-To run the container locally:
-- Open a terminal and go to the location where `awesome-app/src/frontend`
-- Run `sh docker-shell.sh`
-- If running the container for the first time, run `yarn install`
-- Once inside the docker container run `yarn start`
-- Go to `http://localhost:3000` to access the app locally
-
-
-**Deployment Container**
-This container helps manage building and deploying all our app containers. The deployment is to GCP and all docker images go to GCR. 
-
-To run the container locally:
-- Open a terminal and go to the location where `awesome-app/src/deployment`
-- Run `sh docker-shell.sh`
-- Build and Push Docker Containers to GCR (Google Container Registry)
-```
-ansible-playbook deploy-docker-images.yml -i inventory.yml
-```
-
-- Create & Deploy Cluster
-```
-ansible-playbook deploy-k8s-cluster.yml -i inventory.yml --extra-vars cluster_state=present
-```
-
-- View the App
-* Copy the `nginx_ingress_ip` from the terminal from the create cluster command
-* Go to `http://<YOUR INGRESS IP>.sslip.io`
-
-- Run ML Tasks in Vertex AI
-* Run `python cli.py --data_collector`, run just the data collector on Vertex AI
-* Run `python cli.py --data_processor`, run just the data processor on Vertex AI
-* Run `python cli.py --pipeline`, run the entire ML pipeline in Vertex AI
-
-### Deploy using GitHub Actions
-
-Finally we added CI/CD using GitHub Actions, such that we can trigger deployment or any other pipeline using GitHub Events. Our yaml files can be found under `.github/workflows`
-
-`cicdworkflow.yml` - Brief description here
-
-We implemented a CI/CD workflow to use the deployment container to 
-* Invoke docker image building and pushing to GCR on code changes
-* Deploy the changed containers to update the k8s cluster
-* Run Vertex AI jobs if needed
-
----
-
-## NOTE
-
-**DO NOT KEEP YOUR GCP INSTANCES RUNNING**
-
-Once you are done with taking screenshots for the milestone bring them down. 
+----
+You may adjust this template as appropriate for your project.
