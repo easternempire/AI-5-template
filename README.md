@@ -1,7 +1,7 @@
-AC215-Template (Milestone2)
+AI5-Template (Milestone2)
 ==============================
 
-AC215 - Milestone2
+AI5 - Milestone2
 
 Project Organization
 ------------
@@ -23,7 +23,7 @@ Project Organization
 
 
 --------
-# AC215 - Milestone2 - ButterFlyer
+# AI5 - Milestone2 - ButterFlyer
 
 **Team Members**
 Pavlov Protovief, Paolo Primopadre and Pablo El Padron
