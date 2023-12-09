@@ -1,12 +1,7 @@
-AI5 - \<Project Title>
+AC215-Template (Milestone 5)
 ==============================
-### Presentation  Video
-* \<Link Here>
 
-### Blog Post Link
-*  \<Link Here>
----
-
+AC215
 
 Notes:
 
@@ -17,9 +12,6 @@ Project Organization
 ------------
 
     .
-    ├── .github 
-    │   ├── workflows         
-    │   │   │   ├── cicdworkflow.yaml
     ├── data # DO NOT UPLOAD DATA
     │   ├── interim          <- Intermediate preprocessed data
     │   │   ├── test.csv
@@ -58,7 +50,12 @@ Project Organization
     │   ├── workflow           <- Scripts for automating data collection, preprocessing, modeling
     │   │   ├── ...
     │   ├── api-service        <- Code for App backend APIs
-    │   │   ├── ...
+    │   │   ├── api
+    │   │   ├── Dockerfile
+    │   │   ├── docker-entrypoint.sh
+    │   │   ├── docker-shell.sh
+    │   │   ├── Pipfile
+    │   │   ├── Pipfile.lock
     │   ├── frontend            <- Code for App frontend
     │   │   ├── ...
     │   ├── deployment          <- Code for App deployment to GCP
@@ -67,7 +64,6 @@ Project Organization
     │   │   ├── deploy-provision-instance.yml
     │   │   ├── deploy-setup-containers.yml
     │   │   ├── deploy-setup-webserver.yml
-    │   │   ├── deploy-k8s-cluster.yml
     │   │   ├── inventory.yml
     │   │   ├── Dockerfile
     │   │   ├── docker-entrypoint.sh
@@ -75,7 +71,7 @@ Project Organization
     
 --------
 
-# AI5 - Final Project
+# AC215 - Milestone5
 
 **Team Members**
 Pavlov Protovief, Paolo Primopadre and Pablo El Padron
@@ -83,16 +79,31 @@ Pavlov Protovief, Paolo Primopadre and Pablo El Padron
 **Group Name**
 Awesome Group
 
-**Project - Problem Definition**
+**Project**
 In this project we aim to develop an application that can identify various species of mushrooms in the wild using computer vision and offer educational content through a chatbot interface.
 
-## Data Description 
-
-## Proposed Solution
+## Milestone 5
 
 After completions of building a robust ML Pipeline in our previous milestone we have built a backend api service and frontend app. This will be our user-facing application that ties together the various components built in previous milestones.
 
-**Mushroom App**
+**Application Design**
+
+Before we start implementing the app we built a detailed design document outlining the application’s architecture. We built a Solution Architecture abd Technical Architecture to ensure all our components work together.
+
+Here is our Solution Architecture:
+<img src="images/solution-arch.png"  width="800">
+
+Here is our Technical Architecture:
+<img src="images/technical-arch.png"  width="800">
+
+
+**Backend API**
+
+We built backend api service using fast API to expose model functionality to the frontend. We also added apis that will help the frontend display some key information about the model and data. 
+
+<img src="images/api-list.png"  width="800">
+
+**Frontend**
 
 A user friendly React app was built to identify various species of mushrooms in the wild using computer vision models from the backend. Using the app a user can take a picture of a mushroom and upload it. The app will send the image to the backend api to get prediction results on weather the mushroom is poisonous or not. 
 
@@ -101,12 +112,12 @@ Here are some screenshots of our app:
 
 <img src="images/frontend-2.png"  width="800">
 
-**Kubernetes Deployment**
+**Deployment**
 
-We deployed our frontend and backend to a kubernetes cluster to take care of load balancing and failover. We used ansible scripts to manage creating and updating the k8s cluster. Ansible helps us manage infrastructure as code and this is very useful to keep track of our app infrastructure as code in GitHub. It helps use setup deployments in a very automated way.
+We used Ansible to create, provision, and deploy our frontend and backend to GCP in an automated fashion. Ansible helps us manage infrastructure as code and this is very useful to keep track of our app infrastructure as code in GitHub. It helps use setup deployments in a very automated way.
 
-Here is our deployed app on a K8s cluster in GCP:
-<img src="images/k8s-cluster.png"  width="800">
+Here is our deployed app on a single VM in GCP:
+<img src="images/deployment-single-vm.png"  width="800">
 
 
 ### Code Structure
@@ -117,9 +128,7 @@ The following are the folders from the previous milestones:
 - data-processor
 - model-training
 - model-deploy
-- api-service
-- frontend
-- deployment
+- workflow
 ```
 
 **API Service Container**
@@ -143,7 +152,7 @@ To run the container locally:
 
 
 **Deployment Container**
-This container helps manage building and deploying all our app containers. The deployment is to GCP and all docker images go to GCR. 
+This container helps manage building and deployeing all our app containers. The deployment is to GCP and all docker images go to GCR. 
 
 To run the container locally:
 - Open a terminal and go to the location where `awesome-app/src/deployment`
@@ -153,30 +162,27 @@ To run the container locally:
 ansible-playbook deploy-docker-images.yml -i inventory.yml
 ```
 
-- Create & Deploy Cluster
+- Create Compute Instance (VM) Server in GCP
 ```
-ansible-playbook deploy-k8s-cluster.yml -i inventory.yml --extra-vars cluster_state=present
+ansible-playbook deploy-create-instance.yml -i inventory.yml --extra-vars cluster_state=present
 ```
 
-- View the App
-* Copy the `nginx_ingress_ip` from the terminal from the create cluster command
-* Go to `http://<YOUR INGRESS IP>.sslip.io`
+- Provision Compute Instance in GCP
+Install and setup all the required things for deployment.
+```
+ansible-playbook deploy-provision-instance.yml -i inventory.yml
+```
 
-- Run ML Tasks in Vertex AI
-* Run `python cli.py --data_collector`, run just the data collector on Vertex AI
-* Run `python cli.py --data_processor`, run just the data processor on Vertex AI
-* Run `python cli.py --pipeline`, run the entire ML pipeline in Vertex AI
+- Setup Docker Containers in the  Compute Instance
+```
+ansible-playbook deploy-setup-containers.yml -i inventory.yml
+```
 
-### Deploy using GitHub Actions
-
-Finally we added CI/CD using GitHub Actions, such that we can trigger deployment or any other pipeline using GitHub Events. Our yaml files can be found under `.github/workflows`
-
-`cicdworkflow.yml` - Brief description here
-
-We implemented a CI/CD workflow to use the deployment container to 
-* Invoke docker image building and pushing to GCR on code changes
-* Deploy the changed containers to update the k8s cluster
-* Run Vertex AI jobs if needed
+- Setup Webserver on the Compute Instance
+```
+ansible-playbook deploy-setup-webserver.yml -i inventory.yml
+```
+Once the command runs go to `http://<External IP>/` 
 
 ---
 
