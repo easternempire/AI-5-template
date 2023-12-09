@@ -1,12 +1,7 @@
-AI5 - \<Project Title>
+AC215-Template
 ==============================
-### Presentation  Video
-* \<Link Here>
 
-### Blog Post Link
-*  \<Link Here>
----
-
+AC215
 
 Notes:
 
@@ -17,9 +12,6 @@ Project Organization
 ------------
 
     .
-    ├── .github 
-    │   ├── workflows         
-    │   │   │   ├── cicdworkflow.yaml
     ├── data # DO NOT UPLOAD DATA
     │   ├── interim          <- Intermediate preprocessed data
     │   │   ├── test.csv
@@ -41,41 +33,26 @@ Project Organization
     ├── reports              <- Folder containing your milestone markdown submissions
     │   ├── milestone2.md
     │   └── milestone3.md
-    │   └── milestone4.md
-    │   └── milestone5.md
-    ├── presentations        <- Folder containing your midterm presentation
-    │   └── midterm.pdf
     ├── requirements.txt
-    ├── src                    <- Source code and Dockerfiles for data processing and modeling
-    │   ├── data-collector     <- Scripts for dataset creation
-    │   │   ├── ...
-    │   ├── data-processor     <- Code for data processing
-    │   │   ├── ...
-    │   └── model-training     <- Model training, evaluation, and prediction code
-    │   │   ├── ...
-    │   └── model-deploy       <- Model deployment
-    │   │   ├── ...
-    │   ├── workflow           <- Scripts for automating data collection, preprocessing, modeling
-    │   │   ├── ...
-    │   ├── api-service        <- Code for App backend APIs
-    │   │   ├── ...
-    │   ├── frontend            <- Code for App frontend
-    │   │   ├── ...
-    │   ├── deployment          <- Code for App deployment to GCP
-    │   │   ├── deploy-create-instance.yml
-    │   │   ├── deploy-docker-images.yml
-    │   │   ├── deploy-provision-instance.yml
-    │   │   ├── deploy-setup-containers.yml
-    │   │   ├── deploy-setup-webserver.yml
-    │   │   ├── deploy-k8s-cluster.yml
-    │   │   ├── inventory.yml
+    ├── src                  <- Source code and Dockerfiles for data processing and modeling
+    │   ├── datapipeline     <- Scripts for dataset creation
+    │   │   ├── build_records.py
+    │   │   ├── dataloader.py
     │   │   ├── Dockerfile
-    │   │   ├── docker-entrypoint.sh
-    │   │   ├── docker-shell.sh
-    
+    │   │   ├── process.py
+    │   │   ├── Pipfile.lock
+    │   │   └── Pipfile
+    │   └── models           <- Model training, evaluation, and prediction code
+    │       └── vgg16
+    │           ├── Dockerfile
+    │           ├── Pipfile
+    │           ├── Pipfile.lock
+    │           └── train_multi_gpu.py
+    └── test_project.py
+
 --------
 
-# AI5 - Final Project
+# AC215 - Milestone3 - ButterFlyer
 
 **Team Members**
 Pavlov Protovief, Paolo Primopadre and Pablo El Padron
@@ -83,105 +60,65 @@ Pavlov Protovief, Paolo Primopadre and Pablo El Padron
 **Group Name**
 Awesome Group
 
-**Project - Problem Definition**
-In this project we aim to develop an application that can identify various species of mushrooms in the wild using computer vision and offer educational content through a chatbot interface.
+**Project**
+In this project we aim to develop an application that can identify various species of butterflies in the wild using computer vision and offer educational content through a chatbot interface.
 
-## Data Description 
+### Milestone3
 
-## Proposed Solution
+We further streamlined our data pipeline process for this milestone by performing several transformations transformations, such as converting the data to TFRecords. This additional preprocessing was required as we discovered our model architecture was over fitting when only scaling the images. The use of TFRecords resulted in little performance gain, but this might result from our dataset consisting primarily of images and simple labels. 
 
-After completions of building a robust ML Pipeline in our previous milestone we have built a backend api service and frontend app. This will be our user-facing application that ties together the various components built in previous milestones.
+Regarding the modeling process, Google denied our request for multiple GPU compute instances. However, we did design our training script so that we could pass in the arguments defining the number of GPUs to use. To get this to work within the Docker container, we used CMD, which allows us to use the default single GPU training code or overwrite it should more GPUs become available. 
 
-**Mushroom App**
+**Experiment Tracking**
 
-A user friendly React app was built to identify various species of mushrooms in the wild using computer vision models from the backend. Using the app a user can take a picture of a mushroom and upload it. The app will send the image to the backend api to get prediction results on weather the mushroom is poisonous or not. 
+Below you can see the output from our Weights & Biases page. We used this tool to track several iterations of our model training. It was tracked using the `wandb` library we included inside of our `train.py` script. 
 
-Here are some screenshots of our app:
-<img src="images/frontend-1.png"  width="800">
+![wnb image](images/wandb.png)
 
-<img src="images/frontend-2.png"  width="800">
+**Serverless Training**
 
-**Kubernetes Deployment**
+(If Google increases your GPU quota)
 
-We deployed our frontend and backend to a kubernetes cluster to take care of load balancing and failover. We used ansible scripts to manage creating and updating the k8s cluster. Ansible helps us manage infrastructure as code and this is very useful to keep track of our app infrastructure as code in GitHub. It helps use setup deployments in a very automated way.
+Inside our training container, we used the Google Cloud SDK to launch training instances in the cloud. In the image below, you can see several runs of our model. 
 
-Here is our deployed app on a K8s cluster in GCP:
-<img src="images/k8s-cluster.png"  width="800">
+To create a new serverless job we did the following commands: `The steps for running serverless training instances with your code`
 
+![vertix img](images/vertix.png)
 
-### Code Structure
+#### Code Structure
 
-The following are the folders from the previous milestones:
-```
-- data-collector
-- data-processor
-- model-training
-- model-deploy
-- api-service
-- frontend
-- deployment
-```
+**Data Folder**
+Don't submit data, but we want to show one possible way of structuring data transformations.
 
-**API Service Container**
-This container has all the python files to run and expose thr backend apis.
+**Data Processing Container**
 
-To run the container locally:
-- Open a terminal and go to the location where `awesome-app/src/api-service`
-- Run `sh docker-shell.sh`
-- Once inside the docker container run `uvicorn_server`
-- To view and test APIs go to `http://localhost:9000/docs`
+- This container reads 100GB of data, transforming the images to TFRecords and stores them on a GCP bucket
+- Input to this container is source and destination GCS location, parameters for resizing, secrets needed - via docker
+- Output from this container stored on GCP bucket
 
-**Frontend Container**
-This container contains all the files to develop and build a react app. There are dockerfiles for both development and production
+(1) `src/datapipeline/dataloader.py`  - This script loads the original immutable data to our compute instance's local `raw` folder for processing.
 
-To run the container locally:
-- Open a terminal and go to the location where `awesome-app/src/frontend`
-- Run `sh docker-shell.sh`
-- If running the container for the first time, run `yarn install`
-- Once inside the docker container run `yarn start`
-- Go to `http://localhost:3000` to access the app locally
+(2) `src/datapipeline/build_records.py`  - Loads a local copy of the dataset, processes it according to our new transformations, converts it to TFRecords, and pushes it to a GCP bucket sink.
 
+(3) `src/preprocessing/Dockerfile` - This dockerfile starts with  `python:3.8-slim-buster`. This <statement> attaches volume to the docker container and also uses secrets (not to be stored on GitHub) to connect to GCS.
 
-**Deployment Container**
-This container helps manage building and deploying all our app containers. The deployment is to GCP and all docker images go to GCR. 
+To run Dockerfile - `Instructions here`
 
-To run the container locally:
-- Open a terminal and go to the location where `awesome-app/src/deployment`
-- Run `sh docker-shell.sh`
-- Build and Push Docker Containers to GCR (Google Container Registry)
-```
-ansible-playbook deploy-docker-images.yml -i inventory.yml
-```
+**VGG16 Training Container**
 
-- Create & Deploy Cluster
-```
-ansible-playbook deploy-k8s-cluster.yml -i inventory.yml --extra-vars cluster_state=present
-```
+- This container contains all our training scripts and modeling components. It will use data from a GCP bucket, train, and then output model artifacts (saved model) to a GCP bucket.
+- The input for this container is the source bucket for our training data and the output bucket for storing the trained model.
+- Output is a saved TF Keras model.
 
-- View the App
-* Copy the `nginx_ingress_ip` from the terminal from the create cluster command
-* Go to `http://<YOUR INGRESS IP>.sslip.io`
+(1) `src/models/vgg16/train_multi_gpu.py` - This script converts incoming data to TFRecords, applies standard image augmentation, and fits the model. It takes the following arguments:
 
-- Run ML Tasks in Vertex AI
-* Run `python cli.py --data_collector`, run just the data collector on Vertex AI
-* Run `python cli.py --data_processor`, run just the data processor on Vertex AI
-* Run `python cli.py --pipeline`, run the entire ML pipeline in Vertex AI
+> > --gpu [int] : the number of GPUs to use for training, default is 1
+> > --input [string] : the source of the training data
+> > --output [string] : the bucket which to store model artifacts
 
-### Deploy using GitHub Actions
+(3) `src/models/vgg16/Dockerfile` - This dockerfile starts with  `python:3.8-slim-buster`. This <statement> attaches volume to the docker container and also uses secrets (not to be stored on GitHub) to connect to GCS.
 
-Finally we added CI/CD using GitHub Actions, such that we can trigger deployment or any other pipeline using GitHub Events. Our yaml files can be found under `.github/workflows`
+To run Dockerfile - `Instructions here`
 
-`cicdworkflow.yml` - Brief description here
-
-We implemented a CI/CD workflow to use the deployment container to 
-* Invoke docker image building and pushing to GCR on code changes
-* Deploy the changed containers to update the k8s cluster
-* Run Vertex AI jobs if needed
-
----
-
-## NOTE
-
-**DO NOT KEEP YOUR GCP INSTANCES RUNNING**
-
-Once you are done with taking screenshots for the milestone bring them down. 
+**Notebooks** 
+This folder contains code that is not part of container - for e.g: EDA, any 🔍 🕵️‍♀️ 🕵️‍♂️ crucial insights, reports or visualizations. 
